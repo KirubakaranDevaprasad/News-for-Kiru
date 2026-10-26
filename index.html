@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kiru News Network</title>
+<meta name="description" content="Kiru's personal news channel: geopolitics, US elections, US government announcements, tech, big tech, science, medicine, war, global economy and the unexplained, ranked by his interests, reading time and impact.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* Layout: a 24-hour news channel. Channel bug + world clocks, a crawling ticker, the anchor desk (lead story + "your briefing"), the daily dashboard wall, then category segments. Single dark broadcast look by design. */
+:root{
+  --night:#081127; --studio:#0e1b3d; --panel:#13244f; --line:#24396e;
+  --ink:#eef2ff; --ink-2:#b4c0e3; --ink-3:#7c8bb8;
+  --live:#ff2d3d; --amber:#ffb627; --cyan:#38d9ff; --mint:#3ee39c; --violet:#a98bff;
+  --head:"Anton","Impact","Arial Narrow",sans-serif;
+  --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#1b2f6b 0%,transparent 60%),var(--night);background-attachment:fixed;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;overflow-x:hidden}
+a{color:var(--cyan)}
+button{font-family:inherit;color:inherit}
+img{max-width:100%}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:6px}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1240px;margin:0 auto}
+
+/* Channel bar */
+.bar{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,#050c1e,#0a1530);border-bottom:2px solid var(--live)}
+.bar .wrap{display:flex;align-items:center;gap:14px;padding-block:10px;flex-wrap:wrap}
+.bug{display:flex;align-items:center;gap:10px}
+.bug .k{font:400 26px/1 var(--head);letter-spacing:.04em;background:var(--live);color:#fff;padding:6px 10px 4px;border-radius:4px;transform:skew(-8deg)}
+.bug .k span{display:inline-block;transform:skew(8deg)}
+.bug .n{font:400 18px/1 var(--head);letter-spacing:.08em}
+.live{display:inline-flex;align-items:center;gap:6px;font:700 11px var(--mono);letter-spacing:.14em;color:var(--live)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--live);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.25}}
+.clocks{display:flex;gap:14px;margin-left:auto;font:700 12px var(--mono);color:var(--ink-2);flex-wrap:wrap}
+.clocks b{color:var(--ink);font-weight:700}
+.upd{font:11px var(--mono);color:var(--ink-3)}
+
+/* Ticker */
+.ticker{background:var(--amber);color:#1a1200;overflow:hidden;white-space:nowrap;position:relative;border-bottom:1px solid #000}
+.ticker .lab{position:absolute;left:0;top:0;bottom:0;z-index:2;background:#1a1200;color:var(--amber);font:400 15px/32px var(--head);letter-spacing:.06em;padding:0 12px 0 max(12px,env(safe-area-inset-left,0px))}
+.ticker .run{display:inline-block;padding-left:100%;animation:crawl var(--dur,120s) linear infinite;font:700 14px/32px var(--body)}
+.ticker:hover .run{animation-play-state:paused}
+.ticker .run a{color:inherit;text-decoration:none;margin-right:44px}
+.ticker .run a::before{content:"◆";margin-right:10px;color:var(--live)}
+@keyframes crawl{to{transform:translateX(-100%)}}
+
+/* Desk */
+.desk{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:18px;margin-top:20px}
+@media(max-width:920px){.desk{grid-template-columns:1fr}}
+.lead{position:relative;border-radius:18px;overflow:hidden;min-height:360px;background:var(--panel);border:1px solid var(--line);display:flex;align-items:flex-end}
+.lead img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55}
+.lead::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,17,39,.1),rgba(8,17,39,.95) 75%)}
+.lead .lt{position:relative;z-index:1;padding:22px;width:100%}
+.lower{display:inline-flex;align-items:stretch;margin-bottom:10px}
+.lower b{background:var(--live);color:#fff;font:400 14px/1 var(--head);letter-spacing:.08em;padding:7px 10px 5px}
+.lower span{background:#fff;color:#081127;font:700 12px/1 var(--mono);padding:8px 10px;letter-spacing:.06em;text-transform:uppercase}
+.lead h1{font:400 clamp(28px,4.4vw,48px)/1.05 var(--head);letter-spacing:.01em;margin:0 0 10px;text-wrap:balance}
+.lead p{margin:0 0 12px;color:var(--ink-2);max-width:70ch}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font:700 11px var(--mono);letter-spacing:.04em;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+.chip.imp{background:rgba(255,182,39,.14);border-color:rgba(255,182,39,.5);color:#ffd88a}
+.chip.cat{border-color:transparent;color:#081127;font-weight:700}
+
+.brief{background:var(--studio);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.brief h2{font:400 22px/1 var(--head);letter-spacing:.04em;margin:0}
+.budget{display:flex;gap:6px;flex-wrap:wrap}
+.seg{font:700 13px var(--body);padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);cursor:pointer;transition:.15s}
+.seg:hover{border-color:var(--cyan)}
+.seg[aria-pressed="true"]{background:var(--cyan);color:#081127;border-color:var(--cyan)}
+.plist{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;scrollbar-width:thin}
+.pi{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;font-size:13.5px;padding:7px 8px;border-radius:8px;background:rgba(255,255,255,.03)}
+.pi b{font:700 12px var(--mono);color:var(--ink-3)}
+.pi span{min-width:0}
+.pi small{font:11px var(--mono);color:var(--ink-3);white-space:nowrap}
+.btn{font:700 14px var(--body);border-radius:10px;padding:10px 14px;border:1px solid var(--line);background:var(--panel);cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);transition:transform .15s,border-color .15s,background .15s}
+.btn:hover{transform:translateY(-2px);border-color:var(--cyan)}
+.btn.red{background:var(--live);border-color:var(--live);color:#fff}
+.btn.amber{background:var(--amber);border-color:var(--amber);color:#1a1200}
+.btn.sm{padding:6px 10px;font-size:12.5px;border-radius:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* Dashboard wall */
+h2.sec{font:400 clamp(24px,3vw,32px)/1 var(--head);letter-spacing:.04em;margin:38px 0 6px;display:flex;align-items:center;gap:10px}
+h2.sec::before{content:"";width:6px;height:26px;background:var(--live);border-radius:2px}
+.secsub{color:var(--ink-2);margin:0 0 14px;max-width:80ch;font-size:14px}
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.tile{background:var(--studio);border:1px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px;transition:.15s;min-width:0}
+.tile:hover{border-color:var(--c);transform:translateY(-3px);box-shadow:0 10px 30px -14px var(--c)}
+.tile .th{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tile .nm{font:400 17px/1 var(--head);letter-spacing:.05em;color:var(--c)}
+.tile .n{font:700 26px/1 var(--mono);font-variant-numeric:tabular-nums}
+.tile .n small{font-size:11px;color:var(--ink-3);font-weight:400;margin-left:4px}
+.tile .hl{font-size:13px;color:var(--ink-2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.9em}
+.spark{display:flex;align-items:flex-end;gap:3px;height:26px}
+.spark i{flex:1;background:var(--c);opacity:.35;border-radius:2px 2px 0 0;min-height:2px}
+.spark i:last-child{opacity:1}
+.meter{height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--c)}
+.tile .ft{display:flex;justify-content:space-between;font:11px var(--mono);color:var(--ink-3)}
+
+.globe{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;margin-top:14px}
+@media(max-width:860px){.globe{grid-template-columns:1fr}}
+.panel{background:var(--studio);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.panel h3{margin:0 0 4px;font:400 18px/1 var(--head);letter-spacing:.05em}
+.panel>p{margin:0 0 10px;font-size:12.5px;color:var(--ink-3)}
+canvas#map{width:100%;height:auto;display:block;border-radius:10px;background:#0a1634}
+.hb{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,2fr) 36px;gap:8px;align-items:center;font-size:13px;margin-bottom:6px}
+.hb .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2)}
+.hb .tr{height:9px;border-radius:5px;background:rgba(255,255,255,.07);overflow:hidden}
+.hb .fl{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--cyan),var(--violet))}
+.hb .v{font:700 12px var(--mono);text-align:right;color:var(--ink-3)}
+.econ{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.econ div{background:var(--panel);border-radius:10px;padding:8px 10px}
+.econ b{display:block;font:700 20px var(--mono)}
+.econ span{font-size:11.5px;color:var(--ink-3)}
+.up{color:var(--mint)}.dn{color:var(--live)}
+
+/* Segments */
+.segtabs{display:flex;gap:6px;flex-wrap:wrap;position:sticky;top:calc(58px + env(safe-area-inset-top,0px));z-index:10;background:linear-gradient(var(--night) 80%,transparent);padding:10px 0}
+.tabb{font:700 13px var(--body);padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--studio);cursor:pointer;transition:.15s;display:inline-flex;gap:6px;align-items:center}
+.tabb:hover{border-color:var(--c,var(--cyan))}
+.tabb[aria-pressed="true"]{background:var(--c,var(--cyan));color:#081127;border-color:var(--c,var(--cyan))}
+.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.story{background:var(--studio);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+.story:hover{transform:translateY(-3px);box-shadow:0 14px 34px -18px var(--c)}
+.story .im{height:140px;background:var(--panel);overflow:hidden}
+.story .im img{width:100%;height:100%;object-fit:cover}
+.story .bd{padding:12px 14px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.story .kick{font:700 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--c);display:flex;justify-content:space-between;gap:8px}
+.story .kick span:last-child{color:var(--ink-3);font-weight:400;white-space:nowrap}
+.story h3{margin:0;font-size:16.5px;line-height:1.3;font-weight:700}
+.story p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.why{font-size:12.5px;color:#ffd88a;background:rgba(255,182,39,.08);border:1px solid rgba(255,182,39,.25);border-radius:8px;padding:6px 8px}
+.story .ft{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:auto}
+.story .ft .src{font:11px var(--mono);color:var(--ink-3);margin-right:auto}
+.vote{background:none;border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;font-size:13px;transition:.15s}
+.vote:hover{border-color:var(--cyan)}
+.vote[aria-pressed="true"]{background:var(--cyan);color:#081127;border-color:var(--cyan)}
+.empty{padding:26px;border:1px dashed var(--line);border-radius:12px;color:var(--ink-3);text-align:center}
+
+/* Interests + diet */
+.prefs{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px}
+@media(max-width:860px){.prefs{grid-template-columns:1fr}}
+.int{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:center}
+.int .nm{font-size:14px;display:flex;align-items:center;gap:8px}
+.int .nm i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.lvl{display:flex;gap:4px}
+.lvl button{font:700 11px var(--mono);padding:5px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel);cursor:pointer}
+.lvl button[aria-pressed="true"]{background:var(--c);color:#081127;border-color:var(--c)}
+.learned{font:11px var(--mono);color:var(--ink-3);grid-column:1/-1;margin-top:-4px}
+
+/* Anchor mode */
+dialog{border:0;padding:0;background:transparent;max-width:min(880px,calc(100vw - 20px));width:100%}
+dialog::backdrop{background:rgba(3,7,18,.82);backdrop-filter:blur(6px)}
+.onair{background:var(--studio);border:1px solid var(--line);border-radius:18px;overflow:hidden;position:relative}
+.onair .scr{position:relative;min-height:300px;display:flex;align-items:flex-end;background:var(--panel)}
+.onair .scr img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5}
+.onair .scr::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,rgba(8,17,39,.97) 80%)}
+.onair .cap{position:relative;z-index:1;padding:20px 22px}
+.onair h2{font:400 clamp(24px,3.6vw,38px)/1.06 var(--head);margin:0 0 8px;letter-spacing:.01em}
+.onair .ctl{display:flex;gap:8px;flex-wrap:wrap;padding:14px 22px 20px;align-items:center}
+.prog{height:4px;background:rgba(255,255,255,.08)}
+.prog i{display:block;height:100%;width:0;background:var(--live);transition:width .2s linear}
+.xb{position:absolute;top:12px;right:12px;z-index:3;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(8,17,39,.8);cursor:pointer;font-size:18px}
+.note{margin-top:30px;font-size:12.5px;color:var(--ink-3);max-width:90ch}
+footer{margin:20px 0 40px;font:12px var(--mono);color:var(--ink-3)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(30px);opacity:0;z-index:60;background:var(--amber);color:#1a1200;font-weight:700;padding:10px 16px;border-radius:10px;transition:.3s;pointer-events:none;max-width:calc(100vw - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ticker .run{padding-left:0;white-space:normal}}
+</style>
+</head>
+<body>
+<header class="bar gut">
+  <div class="wrap">
+    <div class="bug"><div class="k"><span>KNN</span></div><div><div class="n">KIRU NEWS NETWORK</div><div class="live"><i></i>LIVE · <span id="upd">tuning in…</span></div></div></div>
+    <div class="clocks" id="clocks"></div>
+  </div>
+</header>
+<div class="ticker" aria-label="Breaking headlines"><div class="lab">BREAKING</div><div class="run" id="ticker"><a>Tuning in to the world…</a></div></div>
+
+<main class="gut">
+ <div class="wrap">
+  <section class="desk">
+    <article class="lead" id="lead"><div class="lt"><div class="lower"><b>ON AIR</b><span>Loading</span></div><h1>Gathering today's headlines from around the world…</h1></div></article>
+    <aside class="brief">
+      <div class="row" style="justify-content:space-between"><h2>Your briefing</h2><span class="upd" id="briefMeta"></span></div>
+      <div class="row"><span style="font-size:13px;color:var(--ink-2)">I have</span><div class="budget" id="budget"></div></div>
+      <div class="plist" id="plist"></div>
+      <div class="row"><button class="btn red" id="anchorBtn">▶ Start anchor mode</button><button class="btn amber" id="surpriseBtn">✦ Surprise me</button></div>
+    </aside>
+  </section>
+
+  <h2 class="sec">Today's wall</h2>
+  <p class="secsub">Every category at a glance: stories in the last 24 hours, a 3-day trend, today's top headline, and how much it touches your life. Tap a tile to jump in.</p>
+  <div class="wall" id="wall"></div>
+
+  <div class="globe">
+    <div class="panel"><h3>Around the globe</h3><p>Where today's stories are happening. Brighter dots mean more coverage.</p><canvas id="map" width="1000" height="500" aria-label="World map of story locations"></canvas></div>
+    <div class="panel"><h3>Coverage by region</h3><p>Count of stories in the last 3 days</p><div id="regions"></div>
+      <h3 style="margin-top:16px">Economy pulse</h3><p id="econSrc">Real GDP growth, %</p><div class="econ" id="econ"></div></div>
+  </div>
+
+  <h2 class="sec" id="segTop">Segments</h2>
+  <div class="segtabs" id="segtabs"></div>
+  <div class="feed" id="feed"></div>
+
+  <h2 class="sec">Tune your channel</h2>
+  <p class="secsub">Set how much of each beat you want. The channel also learns on its own: stories you open, how long you stay away reading, what you scroll past, and your 👍 / 👎 all shift the ranking.</p>
+  <div class="prefs">
+    <div class="panel"><h3>Your interests</h3><p>Starting levels you pick, plus what the channel has learned</p><div class="int" id="ints"></div></div>
+    <div class="panel"><h3>Your news diet</h3><p>Minutes spent per beat (today · all time)</p><div id="diet"></div><div class="row" style="margin-top:10px"><button class="btn sm" id="resetLearn">Reset what it learned</button></div></div>
+  </div>
+
+  <p class="note">Headlines come from Wikipedia's Current Events portal (global, edited daily with links to the original reporting), the Federal Register (official US government documents), Hacker News, the Spaceflight News API, BBC News feeds and World Bank data. "Why it matters to you" notes are keyword-based hints, not analysis. Reading times are estimates and adjust to how long you actually spend. Stories are ranked by recency, your interests and impact, never by political leaning. Everything you teach the channel stays in this browser. Updates every 15 minutes.</p>
+  <footer>Built for Kirubakaran Devaprasad · <a href="https://kirubakarandevaprasad.github.io/Kirubakaran-Devaprasad-Portfolio/#work">part of my personal projects</a></footer>
+ </div>
+</main>
+
+<dialog id="air" aria-labelledby="airTitle"><div class="onair" id="airBox"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2400)};
+const ago=d=>{const m=Math.round((Date.now()-d)/60000);return m<1?"just now":m<60?m+"m ago":m<1440?Math.round(m/60)+"h ago":Math.round(m/1440)+"d ago"};
+const PROXY=u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u);
+const ELECTION=new Date("2026-11-03T06:00:00-05:00");
+
+const CATS=[
+ {k:"geo",n:"Geopolitics",ic:"🌐",c:"#38d9ff",base:2},
+ {k:"war",n:"War & Conflict",ic:"⚔️",c:"#ff5a5f",base:2},
+ {k:"elex",n:"Elections",ic:"🗳️",c:"#ffb627",base:2},
+ {k:"usgov",n:"US Government",ic:"🏛️",c:"#7aa2ff",base:2},
+ {k:"econ",n:"Global Economy",ic:"📈",c:"#3ee39c",base:2},
+ {k:"tech",n:"Tech & Innovation",ic:"💡",c:"#a98bff",base:2},
+ {k:"bigtech",n:"Big Tech",ic:"🏢",c:"#ff8ad8",base:1},
+ {k:"sci",n:"Science & Space",ic:"🔭",c:"#5ce1e6",base:1},
+ {k:"med",n:"Medicine & Health",ic:"🧬",c:"#7ef0b0",base:1},
+ {k:"alien",n:"Aliens & the Unexplained",ic:"👽",c:"#c6ff5c",base:1},
+ {k:"world",n:"World Events",ic:"🌍",c:"#ffa26b",base:1}
+];
+const CAT=Object.fromEntries(CATS.map(c=>[c.k,c]));
+const LV=[["Skip",0],["Less",.5],["Normal",1],["More",1.6],["Obsessed",2.3]];
+
+// What touches Kiru: a tech product manager in Parsippany, NJ.
+const IMPACT=[
+ {ic:"💵",l:"Your wallet",re:/tariff|inflation|interest rate|federal reserve|\bfed\b|oil price|gas price|\btax(es)?\b|recession|mortgage|prices?\b|cost of living/i,why:"Could move prices, rates or what you pay."},
+ {ic:"💼",l:"Your work",re:/\bAI\b|artificial intelligence|layoff|SaaS|\bCRM\b|HubSpot|Salesforce|software|semiconductor|\bchip|data cent|cloud|cyber|OpenAI|Anthropic|LLM|product manag/i,why:"Touches the tech and AI world you work in."},
+ {ic:"✈️",l:"Your travel",re:/airline|airport|flight|\bvisa|passport|travel ban|\bFAA\b|border|aviation/i,why:"Could affect flights, visas or trips."},
+ {ic:"📍",l:"Close to home",re:/New Jersey|\bNJ\b|New York|Parsippany|Newark|Morris County|Northeast/i,why:"Happening near Parsippany."},
+ {ic:"🩺",l:"Your health",re:/vaccine|\bFDA\b|outbreak|Ebola|measles|pandemic|cancer|drug|clinical trial|\bCDC\b|Medicare|insurance/i,why:"Health news that could reach you."},
+ {ic:"🗳️",l:"Your vote",re:/election|ballot|midterm|Congress|Senate|House of Representatives|governor|referendum/i,why:"Part of the political picture you vote on."},
+ {ic:"📉",l:"Your investments",re:/stock|S&P|Nasdaq|\bDow\b|bond|market|shares|earnings|crypto|bitcoin/i,why:"Could move markets and your portfolio."}
+];
+const impactOf=t=>IMPACT.filter(i=>i.re.test(t));
+
+// Regions + rough map positions (lon, lat) for the globe
+const PLACES={
+ "North America":[["United States","U.S.","US ","American","Washington","California","Texas","New York","Florida","Canada","Canadian","Mexico","Mexican"],-100,40],
+ "Latin America":[["Brazil","Argentina","Chile","Colombia","Peru","Venezuela","Ecuador","Bolivia","Cuba","Haiti","Guatemala","Honduras","Panama","Uruguay","Paraguay","Caribbean","Nicaragua","El Salvador"],-60,-12],
+ "Europe":[["United Kingdom","UK","Britain","British","England","France","French","Germany","German","Italy","Italian","Spain","Spanish","Poland","Netherlands","Belgium","Sweden","Norway","Finland","Denmark","Ireland","Portugal","Greece","Austria","Switzerland","Hungary","Romania","Czech","Serbia","Europe","European Union","EU ","NATO"],12,50],
+ "Russia & Ukraine":[["Russia","Russian","Ukraine","Ukrainian","Kyiv","Moscow","Belarus","Crimea","Donbas"],38,52],
+ "Middle East":[["Israel","Israeli","Gaza","Palestin","Iran","Iranian","Iraq","Syria","Lebanon","Yemen","Houthi","Saudi","Qatar","UAE","Emirates","Jordan","Turkey","Turkish","Egypt","Kuwait","Oman","Bahrain","Hezbollah","Hamas"],45,29],
+ "Africa":[["Africa","Nigeria","Kenya","Ethiopia","Sudan","South Africa","Congo","DRC","Somalia","Ghana","Uganda","Tanzania","Mali","Niger","Burkina","Libya","Tunisia","Algeria","Morocco","Senegal","Cameroon","Zimbabwe","Mozambique","Rwanda","Sahel"],20,3],
+ "South Asia":[["India","Indian","Pakistan","Bangladesh","Sri Lanka","Nepal","Afghanistan","Bhutan","Maldives","Delhi","Mumbai"],78,23],
+ "East Asia":[["China","Chinese","Beijing","Taiwan","Japan","Japanese","Korea","Korean","Hong Kong","Mongolia","Tokyo"],118,35],
+ "Southeast Asia":[["Indonesia","Philippines","Vietnam","Thailand","Malaysia","Singapore","Myanmar","Cambodia","Laos"],108,8],
+ "Oceania":[["Australia","Australian","New Zealand","Papua","Fiji","Sydney","Pacific"],140,-26]
+};
+function regionOf(t){for(const [r,[ws]] of Object.entries(PLACES))if(ws.some(w=>t.includes(w)))return r;return null}
+
+// ── state ──
+let stories=[], econ=null, lastUpd=null;
+let levels=store.get("knn.levels",Object.fromEntries(CATS.map(c=>[c.k,c.base]))); // index into LV
+let learn=store.get("knn.learn",{}); // cat -> delta
+let votes=store.get("knn.votes",{});
+let hidden=store.get("knn.hidden",{});
+let read=store.get("knn.read",{}); // id -> 1
+let diet=store.get("knn.diet",{day:new Date().toDateString(),today:{},all:{}});
+let pace=store.get("knn.pace",{}); // cat -> learned minutes per open
+let budget=store.get("knn.budget",10), seg=store.get("knn.seg","all");
+if(diet.day!==new Date().toDateString())diet={day:new Date().toDateString(),today:{},all:diet.all||{}};
+
+const weight=k=>Math.max(0,LV[levels[k]??2][1]+(learn[k]||0));
+function bump(k,d){learn[k]=Math.max(-1,Math.min(1.5,(learn[k]||0)+d));store.set("knn.learn",learn)}
+
+// ── sources ──
+async function json(u,ms=15000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw new Error(r.status);return await r.json()}finally{clearTimeout(t)}}
+async function text(u,ms=15000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(u,{signal:c.signal});if(!r.ok)throw new Error(r.status);return await r.text()}finally{clearTimeout(t)}}
+const words=s=>(s||"").split(/\s+/).filter(Boolean).length;
+
+const CE_MAP={"Armed conflicts and attacks":"war","International relations":"geo","Politics and elections":"elex","Business and economy":"econ","Science and technology":"sci","Health and environment":"med","Disasters and accidents":"world","Law and crime":"world"};
+const ALIEN=/\bUFO|\bUAP\b|extraterrestrial|alien life|biosignature|technosignature|SETI|unidentified anomalous|interstellar object|exoplanet/i;
+const TECHY=/\bAI\b|artificial intelligence|software|semiconductor|chip|robot|quantum|startup|app\b|cyber|internet|smartphone|computing/i;
+const BIG=/Apple|Google|Alphabet|Microsoft|Meta\b|Facebook|Amazon|Nvidia|OpenAI|Anthropic|Tesla|Samsung|TSMC|Intel|AMD|Netflix|Salesforce|HubSpot|Oracle|IBM|xAI|SpaceX|ByteDance|TikTok/;
+const MED=/vaccine|cancer|drug|FDA|clinical|disease|outbreak|Ebola|measles|health|medical|patient|gene|therapy|virus|hospital/i;
+
+async function wikiDay(d){
+  const nm=d.toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric",timeZone:"UTC"}).replace(/(\w+) (\d+), (\d+)/,"$3_$1_$2");
+  const j=await json(`https://en.wikipedia.org/w/api.php?action=parse&format=json&origin=*&prop=text&page=Portal:Current_events/${nm}`);
+  if(!j.parse)return [];
+  const doc=new DOMParser().parseFromString(j.parse.text["*"],"text/html");
+  const root=doc.querySelector(".current-events-content")||doc.body;
+  const out=[];let heading=null;
+  const walk=(li,path)=>{const sub=li.querySelector(":scope>ul");
+    if(sub){const label=[...li.childNodes].filter(n=>n.nodeName!=="UL").map(n=>n.textContent).join("").trim();[...sub.children].forEach(c=>walk(c,path.concat(label)));return}
+    const links=[...li.querySelectorAll("a.external")];const src=links.map(a=>a.textContent.trim()).filter(Boolean);
+    let t=li.textContent.replace(/\s*\((?:[^()]*)\)\s*$/,"").replace(/\[\d+\]/g,"").trim();
+    if(t.length<25)return;
+    let cat=CE_MAP[heading]||null;if(!cat)return;
+    if(cat==="sci"&&TECHY.test(t))cat="tech";
+    if(cat==="med"&&!MED.test(t))cat="sci";
+    if(BIG.test(t)&&(cat==="sci"||cat==="tech"||cat==="econ"))cat="bigtech";
+    if(ALIEN.test(t))cat="alien";
+    if(cat==="elex"&&/United States|U\.S\.|Congress|Senate|White House|President Trump|Supreme Court/.test(t)&&!/election/i.test(t))cat="usgov";
+    const wl=li.querySelector("a[href^='/wiki/']");
+    out.push({id:"w"+nm+"-"+out.length,cat,title:t,summary:"",kicker:path.filter(Boolean).slice(-1)[0]||heading,url:links[0]?.href||(wl?"https://en.wikipedia.org"+wl.getAttribute("href"):""),
+      source:src.join(", ")||"Wikipedia",time:new Date(d.getTime()+12*3600e3),img:"",readMin:Math.max(.3,words(t)/230)+(links.length?3:0),via:"Wikipedia Current Events"});
+  };
+  [...root.children].forEach(el=>{if(el.tagName==="UL")[...el.children].forEach(li=>walk(li,[]));else{const b=el.textContent.trim();if(b&&b.length<60)heading=b}});
+  return out;
+}
+async function wikiITN(){
+  const d=new Date();const p=`${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,"0")}/${String(d.getUTCDate()).padStart(2,"0")}`;
+  const j=await json(`https://api.wikimedia.org/feed/v1/wikipedia/en/featured/${p}`);
+  const itn=(j.news||[]).map((n,i)=>{const t=new DOMParser().parseFromString(n.story,"text/html").body.textContent.trim();const l=(n.links||[]).find(x=>x.thumbnail)||n.links?.[0];
+    let cat=/killed|attack|war|strike|military|troops|missile/i.test(t)?"war":/election|elected|vote|president|prime minister/i.test(t)?"elex":ALIEN.test(t)?"alien":/launch|space|scien|discover/i.test(t)?"sci":"geo";
+    return {id:"itn"+i,cat,title:t,summary:l?.extract?.slice(0,260)||"",kicker:"In the news",url:l?.content_urls?.desktop?.page||"",source:"Wikipedia · In the news",time:new Date(),img:l?.thumbnail?.source||"",readMin:Math.max(.4,words(t)/230)+3,via:"Wikipedia",itn:true}});
+  return {itn,dyk:(j.onthisday||[]).slice(0,6)};
+}
+async function fedReg(){
+  const f="&fields[]=title&fields[]=html_url&fields[]=publication_date&fields[]=abstract&fields[]=type&fields[]=agencies&fields[]=subtype&fields[]=document_number";
+  const [p,s]=await Promise.allSettled([json("https://www.federalregister.gov/api/v1/documents.json?per_page=12&order=newest&conditions[type][]=PRESDOCU"+f),json("https://www.federalregister.gov/api/v1/documents.json?per_page=12&order=newest&conditions[significant]=1"+f)]);
+  return [p,s].flatMap((r,i)=>r.status==="fulfilled"?r.value.results.map(d=>({id:"fr"+d.document_number,cat:"usgov",title:d.title,summary:d.abstract||"",kicker:i===0?(d.subtype||"Presidential document"):"Significant rule · "+(d.agencies?.[0]?.name||""),url:d.html_url,source:"Federal Register",time:new Date(d.publication_date+"T12:00:00"),img:"",readMin:Math.max(1,words(d.abstract)/230)+4,via:"Federal Register"})):[]);
+}
+async function hackerNews(){
+  const j=await json("https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=40");
+  const since=Math.floor(Date.now()/1000)-30*86400;
+  const al=await Promise.allSettled(["UAP","UFO","extraterrestrial","biosignature","FDA approves","clinical trial"].map(q=>json(`https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(q)}&tags=story&numericFilters=created_at_i>${since},points>15&hitsPerPage=5`).then(r=>r.hits.map(h=>({...h,_q:q})))));
+  const hits=j.hits.concat(al.flatMap(r=>r.status==="fulfilled"?r.value:[]));
+  const seen=new Set();
+  return hits.filter(h=>h.title&&!seen.has(h.objectID)&&seen.add(h.objectID)).map(h=>{
+    let cat=BIG.test(h.title)?"bigtech":"tech";
+    if(ALIEN.test(h.title)||/UAP|UFO|extraterrestrial|biosignature/.test(h._q||""))cat=ALIEN.test(h.title)?"alien":cat;
+    if(/FDA|clinical/.test(h._q||"")&&MED.test(h.title))cat="med";
+    let host="";try{host=new URL(h.url).hostname.replace("www.","")}catch(e){}
+    return {id:"hn"+h.objectID,cat,title:h.title,summary:`${h.points||0} points · ${h.num_comments||0} comments on Hacker News`,kicker:host||"Hacker News",url:h.url||`https://news.ycombinator.com/item?id=${h.objectID}`,source:host||"Hacker News",time:new Date(h.created_at_i*1000),img:"",readMin:4,via:"Hacker News",heat:h.points||0}});
+}
+async function space(){
+  const [a,b]=await Promise.allSettled([json("https://api.spaceflightnewsapi.net/v4/articles/?limit=14"),json("https://api.spaceflightnewsapi.net/v4/articles/?limit=8&search=life")]);
+  return [a,b].flatMap(r=>r.status==="fulfilled"?r.value.results:[]).map(x=>({id:"sp"+x.id,cat:ALIEN.test(x.title+" "+x.summary)?"alien":"sci",title:x.title,summary:x.summary,kicker:x.news_site,url:x.url,source:x.news_site,time:new Date(x.published_at),img:x.image_url,readMin:Math.max(2,words(x.summary)/230+3),via:"Spaceflight News"}));
+}
+const BBC=[["world","geo"],["us_and_canada","elex"],["technology","tech"],["science_and_environment","sci"],["health","med"],["business","econ"]];
+async function bbc(){
+  const out=[];
+  for(const [feed,cat0] of BBC){
+    try{const x=await text(PROXY(`https://feeds.bbci.co.uk/news/${feed}/rss.xml`),12000);
+      const d=new DOMParser().parseFromString(x,"text/xml");
+      [...d.querySelectorAll("item")].slice(0,12).forEach((it,i)=>{const t=it.querySelector("title")?.textContent||"";const s=it.querySelector("description")?.textContent||"";
+        const th=it.getElementsByTagNameNS("http://search.yahoo.com/mrss/","thumbnail")[0]?.getAttribute("url")||"";
+        let cat=cat0,all=t+" "+s;
+        if(/war|strike|troops|missile|ceasefire|killed|attack|military/i.test(all)&&cat0!=="med")cat="war";
+        if(cat0==="elex"&&!/election|vote|ballot|campaign|candidate|poll|midterm/i.test(all))cat=/Trump|White House|Congress|Senate|Supreme Court|federal|administration/i.test(all)?"usgov":"geo";
+        if(BIG.test(all)&&(cat0==="technology"||cat0==="tech"||cat0==="econ"))cat="bigtech";
+        if(ALIEN.test(all))cat="alien";
+        out.push({id:"bbc"+feed+i+t.length,cat,title:t,summary:s,kicker:"BBC "+feed.replace(/_/g," "),url:it.querySelector("link")?.textContent||"",source:"BBC News",time:new Date(it.querySelector("pubDate")?.textContent||Date.now()),img:th.replace("/240/","/480/"),readMin:3.5,via:"BBC"})});
+    }catch(e){}
+  }
+  return out;
+}
+async function economy(){
+  const out={rows:[],src:""};
+  try{const j=await json(PROXY("https://www.imf.org/external/datamapper/api/v1/NGDP_RPCH/USA/CHN/IND/EU/WEOWORLD?periods=2025,2026,2027"),12000);
+    const v=j.values?.NGDP_RPCH;if(v){const nm={WEOWORLD:"World",USA:"United States",CHN:"China",IND:"India",EU:"European Union"};
+      Object.entries(nm).forEach(([k,n])=>{const s=v[k];if(s)out.rows.push({n,cur:s["2026"],nxt:s["2027"],prev:s["2025"]})});out.src="IMF World Economic Outlook: 2026 estimate, arrow = 2027 forecast"}}catch(e){}
+  if(!out.rows.length){try{const j=await json("https://api.worldbank.org/v2/country/WLD;USA;CHN;IND;EUU/indicator/NY.GDP.MKTP.KD.ZG?format=json&mrv=2&per_page=20");
+    const by={};(j[1]||[]).forEach(r=>{if(r.value!=null)(by[r.country.value]=by[r.country.value]||[]).push(r)});
+    Object.entries(by).forEach(([n,a])=>{a.sort((x,y)=>y.date-x.date);out.rows.push({n,cur:a[0].value,prev:a[1]?.value,yr:a[0].date})});out.src="World Bank: latest actual real GDP growth vs the year before"}catch(e){}}
+  return out;
+}
+
+// ── refresh ──
+async function refresh(){
+  $("#upd").textContent="updating…";
+  const today=new Date();const days=[0,1,2].map(i=>new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()-i)));
+  const jobs=[...days.map(d=>wikiDay(d)),wikiITN().then(r=>{dyk=r.dyk;return r.itn}),fedReg(),hackerNews(),space()];
+  const res=await Promise.allSettled(jobs);
+  let all=res.flatMap(r=>r.status==="fulfilled"?r.value:[]);
+  merge(all);renderAll();
+  bbc().then(b=>{merge(b);renderAll()});
+  economy().then(e=>{econ=e;renderEcon()});
+  lastUpd=new Date();store.set("knn.cache",{t:Date.now(),s:stories.slice(0,400)});
+}
+let dyk=[];
+function merge(list){
+  const seen=new Set(stories.map(s=>s.id)),titles=new Set(stories.map(s=>s.title.slice(0,60).toLowerCase()));
+  list.forEach(s=>{if(!s.title||seen.has(s.id)||titles.has(s.title.slice(0,60).toLowerCase()))return;s.region=regionOf(s.title+" "+(s.summary||""));s.impact=impactOf(s.title+" "+(s.summary||"")).map(i=>i.l);stories.push(s);seen.add(s.id);titles.add(s.title.slice(0,60).toLowerCase())});
+  stories.forEach(s=>{if(!(s.time instanceof Date))s.time=new Date(s.time)});
+  stories=stories.filter(s=>Date.now()-s.time<4*864e5);
+}
+
+// ── ranking ──
+function readMinFor(s){return pace[s.cat]?Math.max(.3,(s.readMin*.4+pace[s.cat]*.6)):s.readMin}
+function rank(s){
+  const age=(Date.now()-s.time)/3600e3;
+  let r=weight(s.cat)*40+Math.max(0,36-age)*.9+s.impact.length*7+(s.img?4:0)+(s.itn?10:0)+Math.min(12,(s.heat||0)/60);
+  if(votes[s.id]===1)r+=25;if(votes[s.id]===-1)r-=60;if(read[s.id])r-=18;
+  if(seg!=="all"&&s.cat===seg)r+=0;
+  return r;
+}
+const visible=()=>stories.filter(s=>!hidden[s.id]&&weight(s.cat)>0);
+
+// ── render ──
+function catChip(k){const c=CAT[k];return `<span class="chip cat" style="background:${c.c}">${c.ic} ${c.n}</span>`}
+function impChips(s){return s.impact.slice(0,2).map(l=>{const i=IMPACT.find(x=>x.l===l);return `<span class="chip imp">${i.ic} ${l}</span>`}).join("")}
+function renderAll(){
+  const vis=visible().sort((a,b)=>rank(b)-rank(a));
+  // ticker
+  const tk=vis.slice(0,18);$("#ticker").innerHTML=tk.map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener" data-open="${esc(s.id)}">${CAT[s.cat].ic} ${esc(s.title.length>140?s.title.slice(0,137)+"…":s.title)}</a>`).join("");
+  $("#ticker").style.setProperty("--dur",Math.max(60,tk.length*9)+"s");
+  // lead
+  const lead=vis.find(s=>s.img)||vis[0];
+  if(lead){const c=CAT[lead.cat];$("#lead").innerHTML=`${lead.img?`<img src="${esc(lead.img)}" alt="">`:""}<div class="lt"><div class="lower"><b>${c.ic} TOP STORY</b><span>${esc(lead.kicker||c.n)}</span></div>
+    <h1>${esc(lead.title)}</h1>${lead.summary?`<p>${esc(lead.summary.slice(0,260))}</p>`:""}
+    <div class="row">${catChip(lead.cat)}${impChips(lead)}<span class="chip">⏱ ${readMinFor(lead).toFixed(0)} min</span><span class="chip">${ago(lead.time)}</span><a class="btn sm red" href="${esc(lead.url)}" target="_blank" rel="noopener" data-open="${esc(lead.id)}">Read</a></div></div>`}
+  renderBrief(vis);renderWall();renderSeg(vis);renderGlobe();renderInts();renderDiet();
+  $("#upd").textContent="updated "+(lastUpd?lastUpd.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"now")+` · ${stories.length} stories`;
+}
+function briefing(vis){const out=[];let t=0;const used={};
+  for(const s of vis){const m=readMinFor(s);if(t+m>budget)continue;if((used[s.cat]||0)>=Math.max(1,Math.ceil(budget/8)))continue;out.push(s);t+=m;used[s.cat]=(used[s.cat]||0)+1;if(t>=budget-.3)break}
+  return {out,t}}
+function renderBrief(vis){
+  const {out,t}=briefing(vis);
+  $("#plist").innerHTML=out.length?out.map((s,i)=>`<div class="pi"><b>${String(i+1).padStart(2,"0")}</b><span>${CAT[s.cat].ic} <a href="${esc(s.url)}" target="_blank" rel="noopener" data-open="${esc(s.id)}" style="color:var(--ink);text-decoration:none">${esc(s.title.length>110?s.title.slice(0,107)+"…":s.title)}</a></span><small>${readMinFor(s).toFixed(1)}m</small></div>`).join(""):`<div class="empty">Loading your briefing…</div>`;
+  $("#briefMeta").textContent=`${out.length} stories · ~${Math.round(t)} min`;
+}
+function renderWall(){
+  const now=Date.now();
+  $("#wall").innerHTML=CATS.map(c=>{
+    const all=stories.filter(s=>s.cat===c.k&&!hidden[s.id]);
+    const d=[2,1,0].map(i=>all.filter(s=>{const a=(now-s.time)/864e5;return a>=i&&a<i+1}).length);
+    const mx=Math.max(1,...d);const top=all.sort((a,b)=>rank(b)-rank(a))[0];
+    const imp=all.length?Math.round(all.filter(s=>s.impact.length).length/all.length*100):0;
+    const extra=c.k==="elex"?` · US Election Day in ${Math.max(0,Math.ceil((ELECTION-now)/864e5))}d`:"";
+    return `<button class="tile" style="--c:${c.c}" data-seg="${c.k}" aria-label="Open ${c.n}"><div class="th"><span class="nm">${c.ic} ${c.n}</span><span class="n">${d[2]}<small>24h</small></span></div>
+     <div class="spark" title="Stories per day, last 3 days">${d.map(v=>`<i style="height:${v/mx*100}%"></i>`).join("")}</div>
+     <div class="hl">${top?esc(top.title):"Nothing new yet."}</div>
+     <div class="meter" title="Share that touches your life"><i style="width:${imp}%"></i></div>
+     <div class="ft"><span>${imp}% touches you${extra}</span><span>${weight(c.k)===0?"muted":"×"+weight(c.k).toFixed(1)}</span></div></button>`}).join("");
+}
+function storyCard(s){const c=CAT[s.cat],im=s.impact[0]?IMPACT.find(x=>x.l===s.impact[0]):null,v=votes[s.id]||0;
+  return `<article class="story" style="--c:${c.c}">${s.img?`<div class="im"><img src="${esc(s.img)}" alt="" loading="lazy" onerror="this.parentNode.remove()"></div>`:""}
+   <div class="bd"><div class="kick"><span>${c.ic} ${esc((s.kicker||c.n).slice(0,48))}</span><span>${ago(s.time)}</span></div>
+   <h3>${esc(s.title)}</h3>${s.summary&&s.via!=="Hacker News"?`<p>${esc(s.summary.slice(0,220))}${s.summary.length>220?"…":""}</p>`:""}
+   ${im?`<div class="why">${im.ic} <b>${im.l}:</b> ${im.why}</div>`:""}
+   <div class="ft"><span class="src">${esc(s.source)} · ⏱ ${readMinFor(s).toFixed(readMinFor(s)<1?1:0)}m${read[s.id]?" · read":""}</span>
+    <button class="vote" data-vote="${esc(s.id)}" data-v="1" aria-pressed="${v===1}" aria-label="More like this">👍</button><button class="vote" data-vote="${esc(s.id)}" data-v="-1" aria-pressed="${v===-1}" aria-label="Less like this">👎</button>
+    <a class="btn sm" href="${esc(s.url)}" target="_blank" rel="noopener" data-open="${esc(s.id)}">Read ↗</a></div></div></article>`}
+function renderSeg(vis){
+  $("#segtabs").innerHTML=`<button class="tabb" data-seg="all" aria-pressed="${seg==="all"}">⭐ For you</button>`+CATS.map(c=>`<button class="tabb" style="--c:${c.c}" data-seg="${c.k}" aria-pressed="${seg===c.k}">${c.ic} ${c.n}</button>`).join("");
+  const list=(seg==="all"?vis:visible().filter(s=>s.cat===seg).sort((a,b)=>rank(b)-rank(a))).slice(0,seg==="all"?36:60);
+  $("#feed").innerHTML=list.length?list.map(storyCard).join(""):`<div class="empty">${seg==="alien"?"No credible alien or UAP news in the last few days. That's normal; the channel only lists reported science and official statements.":"No stories here yet."}</div>`;
+  watchDwell();
+}
+function renderGlobe(){
+  const cnt={};stories.forEach(s=>{if(s.region&&!hidden[s.id])cnt[s.region]=(cnt[s.region]||0)+1});
+  const ent=Object.entries(cnt).sort((a,b)=>b[1]-a[1]),mx=Math.max(1,...ent.map(e=>e[1]));
+  $("#regions").innerHTML=ent.length?ent.map(([r,n])=>`<div class="hb"><span class="nm">${r}</span><div class="tr"><div class="fl" style="width:${n/mx*100}%"></div></div><span class="v">${n}</span></div>`).join(""):`<div class="empty">Waiting for stories…</div>`;
+  drawMap(cnt,mx);
+}
+let mapT=0;
+function drawMap(cnt,mx){
+  const cv=$("#map"),x=cv.getContext("2d"),W=cv.width,H=cv.height;
+  const P=(lon,lat)=>[(lon+180)/360*W,(90-lat)/180*H];
+  const still=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  cancelAnimationFrame(mapT);
+  const frame=t=>{x.clearRect(0,0,W,H);
+    x.strokeStyle="rgba(124,139,184,.18)";x.lineWidth=1;
+    for(let lon=-180;lon<=180;lon+=30){x.beginPath();x.moveTo(...P(lon,90));x.lineTo(...P(lon,-90));x.stroke()}
+    for(let lat=-60;lat<=60;lat+=30){x.beginPath();x.moveTo(...P(-180,lat));x.lineTo(...P(180,lat));x.stroke()}
+    // stylised land masses
+    x.fillStyle="rgba(56,217,255,.08)";
+    [[-160,70,-55,15],[-82,12,-35,-55],[-12,72,40,36],[-18,36,52,-35],[40,75,180,10],[95,10,155,-10],[112,-10,155,-45]].forEach(([a,b,c,d])=>{const [x1,y1]=P(a,b),[x2,y2]=P(c,d);x.beginPath();x.roundRect?x.roundRect(x1,y1,x2-x1,y2-y1,40):x.rect(x1,y1,x2-x1,y2-y1);x.fill()});
+    Object.entries(PLACES).forEach(([r,[,lon,lat]])=>{const n=cnt[r]||0;if(!n)return;const [px,py]=P(lon,lat);const s=n/mx,pulse=still?0:(Math.sin(t/500+lon)*.5+.5);
+      const g=x.createRadialGradient(px,py,0,px,py,30+s*60+pulse*10);g.addColorStop(0,`rgba(255,45,61,${.55+s*.4})`);g.addColorStop(1,"rgba(255,45,61,0)");x.fillStyle=g;x.beginPath();x.arc(px,py,30+s*60+pulse*10,0,7);x.fill();
+      x.fillStyle="#fff";x.beginPath();x.arc(px,py,4+s*4,0,7);x.fill();
+      x.font="700 18px JetBrains Mono, monospace";x.fillStyle="#eef2ff";x.textAlign="center";x.fillText(`${r} · ${n}`,px,py-16-s*8)});
+    if(!still)mapT=requestAnimationFrame(frame)};
+  mapT=requestAnimationFrame(frame);
+}
+function renderEcon(){
+  if(!econ||!econ.rows.length){$("#econ").innerHTML=`<div><span>Economic data unavailable right now.</span></div>`;return}
+  $("#econSrc").textContent=econ.src;
+  $("#econ").innerHTML=econ.rows.map(r=>{const d=r.nxt!=null?r.nxt-r.cur:r.prev!=null?r.cur-r.prev:0;const arrow=d>0.05?"▲":d<-0.05?"▼":"■";
+    return `<div><span>${esc(r.n)}${r.yr?` (${r.yr})`:""}</span><b>${r.cur.toFixed(1)}%</b><span class="${d>0.05?"up":d<-0.05?"dn":""}">${arrow} ${r.nxt!=null?"2027: "+r.nxt.toFixed(1)+"%":(d>=0?"+":"")+d.toFixed(1)+" pts"}</span></div>`}).join("");
+}
+function renderInts(){
+  $("#ints").innerHTML=CATS.map(c=>`<span class="nm" style="--c:${c.c}"><i></i>${c.ic} ${c.n}</span><div class="lvl" style="--c:${c.c}" role="radiogroup" aria-label="${c.n} level">${LV.map(([l],i)=>`<button data-lvl="${c.k}" data-i="${i}" aria-pressed="${(levels[c.k]??2)===i}">${l}</button>`).join("")}</div>
+   ${learn[c.k]?`<span class="learned">Learned: ${learn[c.k]>0?"+":""}${learn[c.k].toFixed(2)} from your reading</span>`:""}`).join("");
+}
+function renderDiet(){
+  const ks=CATS.filter(c=>diet.all[c.k]||diet.today[c.k]);const mx=Math.max(1,...ks.map(c=>diet.all[c.k]||0));
+  $("#diet").innerHTML=ks.length?ks.sort((a,b)=>(diet.all[b.k]||0)-(diet.all[a.k]||0)).map(c=>`<div class="hb"><span class="nm">${c.ic} ${c.n}</span><div class="tr"><div class="fl" style="width:${(diet.all[c.k]||0)/mx*100}%;background:${c.c}"></div></div><span class="v">${(diet.today[c.k]||0).toFixed(0)}·${(diet.all[c.k]||0).toFixed(0)}</span></div>`).join(""):`<div class="empty">Open a few stories and your reading time shows up here.</div>`;
+}
+
+// ── learning: opens, time away reading, dwell, votes ──
+let opened=null;
+function logMinutes(k,m){diet.today[k]=(diet.today[k]||0)+m;diet.all[k]=(diet.all[k]||0)+m;store.set("knn.diet",diet)}
+document.addEventListener("click",e=>{
+  const o=e.target.closest("[data-open]");if(o){const s=stories.find(x=>x.id===o.dataset.open);if(s){read[s.id]=1;store.set("knn.read",read);bump(s.cat,.08);opened={id:s.id,cat:s.cat,t:Date.now()}}}
+  const v=e.target.closest("[data-vote]");if(v){const id=v.dataset.vote,val=+v.dataset.v,s=stories.find(x=>x.id===id);if(votes[id]===val)delete votes[id];else votes[id]=val;store.set("knn.votes",votes);
+    if(s){bump(s.cat,val*(votes[id]?.15:-.15));if(votes[id]===-1){hidden[id]=1;store.set("knn.hidden",hidden)}toast(votes[id]===1?`More ${CAT[s.cat].n} coming up`:votes[id]===-1?`Less of this. Story hidden.`:"Cleared")}renderAll();return}
+  const t=e.target.closest("[data-seg]");if(t){seg=t.dataset.seg;store.set("knn.seg",seg);renderSeg(visible().sort((a,b)=>rank(b)-rank(a)));if(t.classList.contains("tile"))document.getElementById("segTop").scrollIntoView({behavior:"smooth"});return}
+  const l=e.target.closest("[data-lvl]");if(l){levels[l.dataset.lvl]=+l.dataset.i;store.set("knn.levels",levels);renderAll();toast(`${CAT[l.dataset.lvl].n}: ${LV[+l.dataset.i][0]}`);return}
+  const b=e.target.closest("[data-budget]");if(b){budget=+b.dataset.budget;store.set("knn.budget",budget);renderBudget();renderBrief(visible().sort((a,b)=>rank(b)-rank(a)));return}
+  if(e.target.id==="resetLearn"){learn={};votes={};hidden={};read={};pace={};diet={day:new Date().toDateString(),today:{},all:{}};["learn","votes","hidden","read","pace","diet"].forEach(k=>store.set("knn."+k,k==="diet"?diet:{}));renderAll();toast("Channel reset to your interest settings")}
+});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&opened){const m=(Date.now()-opened.t)/60000;
+  if(m>0.15&&m<45){logMinutes(opened.cat,m);pace[opened.cat]=pace[opened.cat]?pace[opened.cat]*.7+m*.3:m;store.set("knn.pace",pace);if(m>1.5)bump(opened.cat,.1);toast(`Logged ${m.toFixed(1)} min of ${CAT[opened.cat].n}`)}
+  opened=null;renderAll()}});
+let io;function watchDwell(){io?.disconnect();const seen=new Map();
+  io=new IntersectionObserver(es=>es.forEach(en=>{const k=en.target.style.getPropertyValue("--c");const card=en.target;if(en.isIntersecting)seen.set(card,Date.now());else if(seen.has(card)){const s=(Date.now()-seen.get(card))/1000;seen.delete(card);
+    const cat=CATS.find(c=>c.c===k.trim());if(cat&&s>4&&s<120){logMinutes(cat.k,s/60);if(s>8)bump(cat.k,.01)}}}),{threshold:.6});
+  document.querySelectorAll(".story").forEach(el=>io.observe(el))}
+
+// ── anchor mode (TV-style auto playlist) ──
+let air={list:[],i:0,timer:null,t0:0,dur:0};
+function startAir(list){air.list=list;air.i=0;$("#air").showModal();show()}
+function show(){clearInterval(air.timer);const s=air.list[air.i];if(!s){$("#air").close();toast("That's your briefing. Back to the desk.");return}
+  const c=CAT[s.cat],im=s.impact[0]?IMPACT.find(x=>x.l===s.impact[0]):null;air.dur=Math.min(25,8+s.title.split(" ").length*.35+(s.summary?6:0))*1000;air.t0=Date.now();
+  $("#airBox").innerHTML=`<button class="xb" id="airX" aria-label="Close">×</button><div class="scr">${s.img?`<img src="${esc(s.img)}" alt="">`:""}<div class="cap"><div class="lower"><b>${c.ic} ${String(air.i+1).padStart(2,"0")}/${String(air.list.length).padStart(2,"0")}</b><span>${esc(c.n)}</span></div>
+   <h2 id="airTitle">${esc(s.title)}</h2>${s.summary&&s.via!=="Hacker News"?`<p style="color:var(--ink-2);margin:0 0 8px">${esc(s.summary.slice(0,300))}</p>`:""}${im?`<div class="why">${im.ic} <b>${im.l}:</b> ${im.why}</div>`:""}</div></div>
+   <div class="prog"><i id="airP"></i></div>
+   <div class="ctl"><button class="btn" id="airPrev">⏮</button><button class="btn" id="airPause">⏸ Pause</button><button class="btn" id="airNext">Next ⏭</button>
+    <a class="btn red" href="${esc(s.url)}" target="_blank" rel="noopener" data-open="${esc(s.id)}">Read full story</a><span class="upd" style="margin-left:auto">${esc(s.source)} · ${ago(s.time)}</span></div>`;
+  air.paused=false;air.timer=setInterval(()=>{if(air.paused)return;const p=(Date.now()-air.t0)/air.dur;$("#airP").style.width=Math.min(100,p*100)+"%";if(p>=1){air.i++;show()}},200)}
+$("#air").addEventListener("click",e=>{const id=e.target.id;
+  if(id==="air"||id==="airX"){clearInterval(air.timer);$("#air").close()}
+  if(id==="airNext"){air.i++;show()} if(id==="airPrev"){air.i=Math.max(0,air.i-1);show()}
+  if(id==="airPause"){air.paused=!air.paused;if(!air.paused)air.t0=Date.now()-(parseFloat($("#airP").style.width)||0)/100*air.dur;e.target.textContent=air.paused?"▶ Play":"⏸ Pause"}});
+$("#air").addEventListener("close",()=>clearInterval(air.timer));
+$("#anchorBtn").addEventListener("click",()=>{const {out}=briefing(visible().sort((a,b)=>rank(b)-rank(a)));if(!out.length){toast("Still loading the news");return}startAir(out)});
+$("#surpriseBtn").addEventListener("click",()=>{
+  const v=visible();if(!v.length){toast("Still loading the news");return}
+  const least=[...CATS].sort((a,b)=>((diet.all[a.k]||0)-(diet.all[b.k]||0))).map(c=>c.k);
+  const pool=v.filter(s=>least.slice(0,4).includes(s.cat)&&!read[s.id]);
+  const s=(pool.length?pool:v)[Math.floor(Math.random()*(pool.length||v.length))];
+  const fact=dyk.length?dyk[Math.floor(Math.random()*dyk.length)]:null;
+  const extra=fact?[{id:"dyk",cat:"world",title:`On this day in ${fact.year}: ${fact.text}`,summary:"",kicker:"From the archive",url:fact.pages?.[0]?.content_urls?.desktop?.page||"",source:"Wikipedia · On this day",time:new Date(),img:fact.pages?.[0]?.thumbnail?.source||"",impact:[],readMin:1}]:[];
+  startAir([s,...extra]);
+});
+
+// ── budget + clocks ──
+function renderBudget(){$("#budget").innerHTML=[5,10,20,30].map(m=>`<button class="seg" data-budget="${m}" aria-pressed="${budget===m}">${m} min</button>`).join("")}
+function clocks(){const z=[["NJ","America/New_York"],["LON","Europe/London"],["DXB","Asia/Dubai"],["DEL","Asia/Kolkata"],["TYO","Asia/Tokyo"]];
+  $("#clocks").innerHTML=z.map(([l,tz])=>`<span>${l} <b>${new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:tz})}</b></span>`).join("")}
+
+// ── boot ──
+renderBudget();clocks();setInterval(clocks,30000);
+const cache=store.get("knn.cache",null);
+if(cache&&Date.now()-cache.t<6*3600e3){stories=cache.s.map(s=>({...s,time:new Date(s.time)}));lastUpd=new Date(cache.t);renderAll()}
+renderInts();renderDiet();
+refresh();setInterval(refresh,15*60*1000);
+})();
+</script>
+</body>
+</html>
