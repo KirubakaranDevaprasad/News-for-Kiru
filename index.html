@@ -459,6 +459,7 @@ async function economy(){
 
 // ── headline + one-liner from the source text (trimmed, not rewritten) ──
 function sentences(t){return (t||"").replace(/\s+/g," ").match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g)||[]}
+const GENERIC=new Set(["In the news","Armed conflicts and attacks","International relations","Politics and elections","Business and economy","Science and technology","Health and environment","Disasters and accidents","Law and crime"]);
 function headlineOf(s){
   let t=s.title.replace(/\s+/g," ").trim();
   const wc=t.split(" ").length;
@@ -470,7 +471,8 @@ function headlineOf(s){
 function onelineOf(s){
   const h=headlineOf(s);
   if(s.via==="Hacker News"){const host=s.kicker&&s.kicker!=="Hacker News"?` from ${s.kicker}`:"";return `Trending with technologists${host}: ${s.summary.replace(" on Hacker News","")}.`}
-  if(s.via==="Wikipedia Current Events"||s.itn){if(h.endsWith("…")||h.length<s.title.length-3)return s.title.replace(/\s+/g," ");return s.kicker&&s.kicker!==h?`Part of the ongoing story: ${s.kicker}.`:""}
+  if(s.itn){const c=sentences(s.summary)[0]||"";return c?`Context: ${c.trim()}`:""}
+  if(s.via==="Wikipedia Current Events"){if(h.endsWith("…")||h.length<s.title.length-3)return s.title.replace(/\s+/g," ");return s.kicker&&s.kicker!==h&&!GENERIC.has(s.kicker)?`Part of the ongoing story: ${s.kicker}.`:""}
   const sum=sentences(s.summary)[0]||"";const w=sum.split(" ");return w.length>32?w.slice(0,30).join(" ")+"…":sum.trim();
 }
 
@@ -480,9 +482,9 @@ async function refresh(){
   const today=new Date();const days=[0,1,2].map(i=>new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()-i)));
   const res=await Promise.allSettled([...days.map(d=>wikiDay(d)),wikiITN().then(r=>{dyk=r.dyk;return r.itn}),fedReg(),hackerNews(),techTrending(),space()]);
   merge(res.flatMap(r=>r.status==="fulfilled"?r.value:[]));lastUpd=new Date();renderAll();
-  bbc().then(b=>{merge(b);renderAll();store.set("knn.cache.v5",{t:Date.now(),s:stories.slice(0,450)})});
+  bbc().then(b=>{merge(b);renderAll();store.set("knn.cache.v6",{t:Date.now(),s:stories.slice(0,450)})});
   economy().then(e=>{econ=e;renderEcon()});
-  store.set("knn.cache.v5",{t:Date.now(),s:stories.slice(0,450)});
+  store.set("knn.cache.v6",{t:Date.now(),s:stories.slice(0,450)});
 }
 async function techTrending(){
   const since=Math.floor(Date.now()/1000)-2*86400;
@@ -693,7 +695,7 @@ function clocks(){const z=[["NJ","America/New_York"],["IST","Asia/Kolkata"],["LO
 
 if(![3,5,10,20].includes(budget))budget=5;
 renderBudget();clocks();setInterval(clocks,30000);
-const cache=store.get("knn.cache.v5",null);
+const cache=store.get("knn.cache.v6",null);
 if(cache&&Date.now()-cache.t<6*3600e3){stories=[];merge(cache.s.map(s=>({...s,time:new Date(s.time)})));lastUpd=new Date(cache.t);renderAll()}
 renderInts();renderDiet();
 refresh();setInterval(refresh,15*60*1000);
