@@ -401,7 +401,7 @@ async function refresh(){
   merge(all);renderAll();
   bbc().then(b=>{merge(b);renderAll()});
   economy().then(e=>{econ=e;renderEcon()});
-  lastUpd=new Date();store.set("knn.cache",{t:Date.now(),s:stories.slice(0,400)});
+  lastUpd=new Date();store.set("knn.cache.v2",{t:Date.now(),s:stories.slice(0,400)});
 }
 let dyk=[];
 function merge(list){
@@ -570,7 +570,7 @@ function clocks(){const z=[["NJ","America/New_York"],["LON","Europe/London"],["D
 
 // ── boot ──
 renderBudget();clocks();setInterval(clocks,30000);
-const cache=store.get("knn.cache",null);
+const cache=store.get("knn.cache.v2",null);
 if(cache&&Date.now()-cache.t<6*3600e3){stories=cache.s.map(s=>({...s,time:new Date(s.time)}));lastUpd=new Date(cache.t);renderAll()}
 renderInts();renderDiet();
 refresh();setInterval(refresh,15*60*1000);
