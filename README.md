@@ -17,3 +17,12 @@ Interest levels per beat, plus what it observes: stories you open, how long you'
 
 ## Sources (free, no keys)
 Wikipedia Current Events portal & featured feed · Federal Register API · Hacker News (Algolia) · Spaceflight News API · BBC News RSS · IMF WEO / World Bank. Refreshes every 15 minutes.
+
+## v2: lighter, tech-first, impact lens
+- Light studio theme. **Tech & Innovation** and **Tech Companies** lead, then **Geopolitics**
+- Every story shows a short **headline** plus an **"In one line"** summary trimmed from the source
+- **🔊 Read it to me:** your briefing is read aloud (browser speech), highlighting each item as it plays
+- **Impact on you board:** High / Medium / Big picture, with lenses for visa & immigration, career & jobs, India connection, wallet, travel, close to home, health, people's lives, political decisions, war & security, environment, protests & unrest, government change, markets
+- **Tech company radar:** OpenAI, Anthropic, Google, Microsoft, Apple, Nvidia, Meta, Amazon, Tesla, Salesforce, HubSpot, Infosys/TCS and more
+- Feed views: **Headlines**, **Cards**, **Full**
+- **✦ Surprise me:** a high-impact story, a hot tech pick, a beat you rarely read, and a moment from history, in anchor mode
