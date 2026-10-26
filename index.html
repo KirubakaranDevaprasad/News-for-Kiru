@@ -317,14 +317,14 @@ const LENSES=[
  {k:"career",ic:"💼",l:"Career & jobs",w:4,re:/layoff|laid off|hiring|job cuts|jobs report|unemployment|\bAI\b|artificial intelligence|\bLLM|SaaS|software|product manag|automation|startup|funding round|\bIPO\b|HubSpot|Salesforce|tech jobs|workforce|data cent|semiconductor|\bchips?\b/i,why:"Shapes the tech job market and the skills that are in demand."},
  {k:"india",ic:"🇮🇳",l:"India connection",w:3,re:/\bIndia|Indian|Modi|rupee|Delhi|Mumbai|Bengaluru|Bangalore|Chennai|Hyderabad|Kerala|Tamil|Pakistan|Kashmir/i,why:"Touches India: family, travel home, remittances or the rupee."},
  {k:"wallet",ic:"💵",l:"Your wallet",w:3,re:/tariff|inflation|interest rate|federal reserve|\bFed\b|oil price|gas price|\btax(es)?\b|recession|mortgage|cost of living|rent|dollar/i,why:"Could move prices, rent, rates or what you send home."},
- {k:"travel",ic:"✈️",l:"Travel",w:2,re:/airline|airport|flight|passport|\bFAA\b|aviation|air travel/i,why:"Could affect flights or trips, including visits home."},
+ {k:"travel",ic:"✈️",l:"Travel",w:2,re:/airline|airport|\bflights?\b|passport|\bFAA\b|aviation|air travel/i,why:"Could affect flights or trips, including visits home."},
  {k:"home",ic:"📍",l:"Close to home",w:3,re:/New Jersey|\bNJ\b|New York|Parsippany|Newark|Morris County/i,why:"Happening near you in New Jersey or New York."},
  {k:"health",ic:"🩺",l:"Health",w:2,re:/vaccine|\bFDA\b|outbreak|Ebola|measles|pandemic|cancer|clinical trial|\bCDC\b|health insurance/i,why:"Health news that could reach you."},
- {k:"people",ic:"🧍",l:"People's lives",w:1,re:/killed|dead|famine|refugee|humanitarian|displaced|hunger|earthquake|flood|cyclone|hurricane|evacuat|civilians/i,why:"Affects ordinary people's safety and livelihoods."},
+ {k:"people",ic:"🧍",l:"People's lives",w:1,re:/killed|\bdead\b|\bdeaths?\b|famine|refugee|humanitarian|displaced|hunger|earthquake|flood|cyclone|hurricane|evacuat|civilians/i,why:"Affects ordinary people's safety and livelihoods."},
  {k:"policy",ic:"⚖️",l:"Political decisions",w:1,re:/\blaw\b|\bbill\b|signs|signed|executive order|ruling|Supreme Court|sanction|regulation|\bbans?\b|policy|parliament (passes|approves)|treaty|summit|agreement/i,why:"A decision by a government or court that sets new rules."},
- {k:"war",ic:"⚔️",l:"War & security",w:1,re:/\bwar\b|airstrike|strike on|missile|troops|ceasefire|attack|drone|shelling|invasion|militant|insurgen/i,why:"Conflict that can shift alliances, markets and migration."},
+ {k:"war",ic:"⚔️",l:"War & security",w:1,re:/\bwar\b|airstrike|strike on|missile|troops|ceasefire|\battack(s|ed)?\b|drone strike|drone attack|shelling|invasion|militant|insurgen/i,why:"Conflict that can shift alliances, markets and migration."},
  {k:"env",ic:"🌱",l:"Environment",w:1,re:/climate|emission|wildfire|heatwave|drought|pollution|environment|\bCOP\d*|deforest|renewable|carbon/i,why:"Environmental change with long-term effects on everyone."},
- {k:"protest",ic:"✊",l:"Protests & unrest",w:1,re:/protest|demonstrat|rally|unrest|riot|march(es|ed) |general strike|crackdown/i,why:"Public unrest that can lead to policy or leadership change."},
+ {k:"protest",ic:"✊",l:"Protests & unrest",w:1,re:/protest|demonstrators|demonstrations|\bunrest\b|\briots?\b|general strike|crackdown|marched/i,why:"Public unrest that can lead to policy or leadership change."},
  {k:"govchange",ic:"🏛️",l:"Government change",w:2,re:/\belected\b|wins (the )?(election|runoff|presidency)|resign|sworn in|\bcoup\b|new (prime minister|president)|takes office|no-confidence|cabinet|snap election|ousted/i,why:"A change in who governs, which can reshape policy fast."},
  {k:"markets",ic:"📉",l:"Markets",w:2,re:/\bstocks?\b|S&P|Nasdaq|\bDow\b|bond yield|stock market|shares|earnings|crypto|bitcoin/i,why:"Could move markets and your investments."}
 ];
@@ -400,7 +400,7 @@ async function wikiITN(){
   const d=new Date();const p=`${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,"0")}/${String(d.getUTCDate()).padStart(2,"0")}`;
   const j=await json(`https://api.wikimedia.org/feed/v1/wikipedia/en/featured/${p}`);
   const itn=(j.news||[]).map((n,i)=>{const t=new DOMParser().parseFromString(n.story,"text/html").body.textContent.trim();const l=(n.links||[]).find(x=>x.thumbnail)||n.links?.[0];
-    let cat=/killed|attack|war|strike|military|troops|missile/i.test(t)?"war":/election|elected|vote|president|prime minister/i.test(t)?"elex":ALIEN.test(t)?"alien":/launch|space|scien|discover/i.test(t)?"sci":"geo";
+    let cat=ALIEN.test(t)?"alien":BIG.test(t)?"bigtech":TECHY.test(t)||/vulnerabilit|hack|outage|online services/i.test(t)?"tech":/killed|attack|\bwar\b|airstrike|military|troops|missile/i.test(t)?"war":/election|elected|referendum/i.test(t)?"elex":/president|prime minister|minister|summit|sanction|treaty|diplomat|government|parliament/i.test(t)?"geo":/launch|space|scien|discover/i.test(t)?"sci":"world";
     return {id:"itn"+i,cat,title:t,summary:l?.extract?.slice(0,260)||"",kicker:"In the news",url:l?.content_urls?.desktop?.page||"",source:"Wikipedia · In the news",time:new Date(),img:l?.thumbnail?.source||"",readMin:Math.max(.4,words(t)/230)+3,via:"Wikipedia",itn:true}});
   return {itn,dyk:(j.onthisday||[]).slice(0,6)};
 }
@@ -480,9 +480,9 @@ async function refresh(){
   const today=new Date();const days=[0,1,2].map(i=>new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()-i)));
   const res=await Promise.allSettled([...days.map(d=>wikiDay(d)),wikiITN().then(r=>{dyk=r.dyk;return r.itn}),fedReg(),hackerNews(),techTrending(),space()]);
   merge(res.flatMap(r=>r.status==="fulfilled"?r.value:[]));lastUpd=new Date();renderAll();
-  bbc().then(b=>{merge(b);renderAll();store.set("knn.cache.v3",{t:Date.now(),s:stories.slice(0,450)})});
+  bbc().then(b=>{merge(b);renderAll();store.set("knn.cache.v4",{t:Date.now(),s:stories.slice(0,450)})});
   economy().then(e=>{econ=e;renderEcon()});
-  store.set("knn.cache.v3",{t:Date.now(),s:stories.slice(0,450)});
+  store.set("knn.cache.v4",{t:Date.now(),s:stories.slice(0,450)});
 }
 async function techTrending(){
   const since=Math.floor(Date.now()/1000)-2*86400;
@@ -693,7 +693,7 @@ function clocks(){const z=[["NJ","America/New_York"],["IST","Asia/Kolkata"],["LO
 
 if(![3,5,10,20].includes(budget))budget=5;
 renderBudget();clocks();setInterval(clocks,30000);
-const cache=store.get("knn.cache.v3",null);
+const cache=store.get("knn.cache.v4",null);
 if(cache&&Date.now()-cache.t<6*3600e3){stories=[];merge(cache.s.map(s=>({...s,time:new Date(s.time)})));lastUpd=new Date(cache.t);renderAll()}
 renderInts();renderDiet();
 refresh();setInterval(refresh,15*60*1000);
