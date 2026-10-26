@@ -313,7 +313,7 @@ const BEAT_BOOST={tech:14,bigtech:12,geo:9};
 
 // Impact lenses. w = how much it weighs on you personally.
 const LENSES=[
- {k:"visa",ic:"🛂",l:"Visa & immigration",w:5,re:/H-1B|H1B|\bOPT\b|STEM OPT|F-1|student visa|green card|immigration|immigrant|USCIS|deport|\bvisas?\b|work permit|\bICE\b|asylum|travel ban|international students|naturali[sz]|citizenship|border policy|DHS/i,why:"Rules on visas, work permits or immigration can change your status, travel or job options."},
+ {k:"visa",ic:"🛂",l:"Visa & immigration",w:5,re:/H-1B|H1B|\bOPT\b|STEM OPT|F-1|student visa|green card|immigration|immigrant|USCIS|deport|\bvisas?\b|work permit|asylum|travel ban|international students|naturali[sz]|citizenship|border policy/i,cs:/\bICE\b|\bDHS\b/,why:"Rules on visas, work permits or immigration can change your status, travel or job options."},
  {k:"career",ic:"💼",l:"Career & jobs",w:4,re:/layoff|laid off|hiring|job cuts|jobs report|unemployment|\bAI\b|artificial intelligence|\bLLM|SaaS|software|product manag|automation|startup|funding round|\bIPO\b|HubSpot|Salesforce|tech jobs|workforce|data cent|semiconductor|\bchips?\b/i,why:"Shapes the tech job market and the skills that are in demand."},
  {k:"india",ic:"🇮🇳",l:"India connection",w:3,re:/\bIndia|Indian|Modi|rupee|Delhi|Mumbai|Bengaluru|Bangalore|Chennai|Hyderabad|Kerala|Tamil|Pakistan|Kashmir/i,why:"Touches India: family, travel home, remittances or the rupee."},
  {k:"wallet",ic:"💵",l:"Your wallet",w:3,re:/tariff|inflation|interest rate|federal reserve|\bFed\b|oil price|gas price|\btax(es)?\b|recession|mortgage|cost of living|rent|dollar/i,why:"Could move prices, rent, rates or what you send home."},
@@ -329,7 +329,7 @@ const LENSES=[
  {k:"markets",ic:"📉",l:"Markets",w:2,re:/\bstocks?\b|S&P|Nasdaq|\bDow\b|bond yield|stock market|shares|earnings|crypto|bitcoin/i,why:"Could move markets and your investments."}
 ];
 const LENS=Object.fromEntries(LENSES.map(l=>[l.k,l]));
-function lensesOf(t){return LENSES.filter(l=>l.re.test(t)).map(l=>l.k)}
+function lensesOf(t){return LENSES.filter(l=>l.re.test(t)||(l.cs&&l.cs.test(t))).map(l=>l.k)}
 function impactLevel(s){const sc=s.lenses.reduce((a,k)=>a+LENS[k].w,0);return sc>=5?"hi":sc>=3?"md":"lo"}
 const LVL={hi:["High impact on you","var(--hi)"],md:["Worth knowing","var(--md)"],lo:["Big picture","var(--lo)"]};
 
@@ -480,9 +480,9 @@ async function refresh(){
   const today=new Date();const days=[0,1,2].map(i=>new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),today.getUTCDate()-i)));
   const res=await Promise.allSettled([...days.map(d=>wikiDay(d)),wikiITN().then(r=>{dyk=r.dyk;return r.itn}),fedReg(),hackerNews(),techTrending(),space()]);
   merge(res.flatMap(r=>r.status==="fulfilled"?r.value:[]));lastUpd=new Date();renderAll();
-  bbc().then(b=>{merge(b);renderAll();store.set("knn.cache.v4",{t:Date.now(),s:stories.slice(0,450)})});
+  bbc().then(b=>{merge(b);renderAll();store.set("knn.cache.v5",{t:Date.now(),s:stories.slice(0,450)})});
   economy().then(e=>{econ=e;renderEcon()});
-  store.set("knn.cache.v4",{t:Date.now(),s:stories.slice(0,450)});
+  store.set("knn.cache.v5",{t:Date.now(),s:stories.slice(0,450)});
 }
 async function techTrending(){
   const since=Math.floor(Date.now()/1000)-2*86400;
@@ -693,7 +693,7 @@ function clocks(){const z=[["NJ","America/New_York"],["IST","Asia/Kolkata"],["LO
 
 if(![3,5,10,20].includes(budget))budget=5;
 renderBudget();clocks();setInterval(clocks,30000);
-const cache=store.get("knn.cache.v4",null);
+const cache=store.get("knn.cache.v5",null);
 if(cache&&Date.now()-cache.t<6*3600e3){stories=[];merge(cache.s.map(s=>({...s,time:new Date(s.time)})));lastUpd=new Date(cache.t);renderAll()}
 renderInts();renderDiet();
 refresh();setInterval(refresh,15*60*1000);
