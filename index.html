@@ -258,11 +258,11 @@ const LV=[["Skip",0],["Less",.5],["Normal",1],["More",1.6],["Obsessed",2.3]];
 const IMPACT=[
  {ic:"💵",l:"Your wallet",re:/tariff|inflation|interest rate|federal reserve|\bfed\b|oil price|gas price|\btax(es)?\b|recession|mortgage|prices?\b|cost of living/i,why:"Could move prices, rates or what you pay."},
  {ic:"💼",l:"Your work",re:/\bAI\b|artificial intelligence|layoff|SaaS|\bCRM\b|HubSpot|Salesforce|software|semiconductor|\bchip|data cent|cloud|cyber|OpenAI|Anthropic|LLM|product manag/i,why:"Touches the tech and AI world you work in."},
- {ic:"✈️",l:"Your travel",re:/airline|airport|flight|\bvisa|passport|travel ban|\bFAA\b|border|aviation/i,why:"Could affect flights, visas or trips."},
+ {ic:"✈️",l:"Your travel",re:/airline|airport|flight|\bvisa|passport|travel ban|\bFAA\b|border crossing|aviation/i,why:"Could affect flights, visas or trips."},
  {ic:"📍",l:"Close to home",re:/New Jersey|\bNJ\b|New York|Parsippany|Newark|Morris County|Northeast/i,why:"Happening near Parsippany."},
  {ic:"🩺",l:"Your health",re:/vaccine|\bFDA\b|outbreak|Ebola|measles|pandemic|cancer|drug|clinical trial|\bCDC\b|Medicare|insurance/i,why:"Health news that could reach you."},
  {ic:"🗳️",l:"Your vote",re:/election|ballot|midterm|Congress|Senate|House of Representatives|governor|referendum/i,why:"Part of the political picture you vote on."},
- {ic:"📉",l:"Your investments",re:/stock|S&P|Nasdaq|\bDow\b|bond|market|shares|earnings|crypto|bitcoin/i,why:"Could move markets and your portfolio."}
+ {ic:"📉",l:"Your investments",re:/\bstocks?\b|S&P|Nasdaq|\bDow\b|bond yield|stock market|markets? (rall|slump|fell|rose|crash)|shares|earnings|crypto|bitcoin/i,why:"Could move markets and your portfolio."}
 ];
 const impactOf=t=>IMPACT.filter(i=>i.re.test(t));
 
@@ -406,12 +406,13 @@ async function refresh(){
 let dyk=[];
 function merge(list){
   const seen=new Set(stories.map(s=>s.id)),titles=new Set(stories.map(s=>s.title.slice(0,60).toLowerCase()));
-  list.forEach(s=>{if(!s.title||seen.has(s.id)||titles.has(s.title.slice(0,60).toLowerCase()))return;s.region=regionOf(s.title+" "+(s.summary||""));s.impact=impactOf(s.title+" "+(s.summary||"")).map(i=>i.l);stories.push(s);seen.add(s.id);titles.add(s.title.slice(0,60).toLowerCase())});
+  list.forEach(s=>{if(!s.title||seen.has(s.id)||titles.has(s.title.slice(0,60).toLowerCase()))return;s.region=regionOf(s.title+" "+(s.summary||""));s.impact=impactOf(s.title+" "+(s.via==="Wikipedia"?"":(s.summary||""))).map(i=>i.l);stories.push(s);seen.add(s.id);titles.add(s.title.slice(0,60).toLowerCase())});
   stories.forEach(s=>{if(!(s.time instanceof Date))s.time=new Date(s.time)});
   stories=stories.filter(s=>Date.now()-s.time<4*864e5);
 }
 
 // ── ranking ──
+const skimMin=s=>Math.max(.25,words(s.title+" "+(s.via==="Hacker News"?"":(s.summary||"").slice(0,300)))/200);
 function readMinFor(s){return pace[s.cat]?Math.max(.3,(s.readMin*.4+pace[s.cat]*.6)):s.readMin}
 function rank(s){
   const age=(Date.now()-s.time)/3600e3;
@@ -439,12 +440,12 @@ function renderAll(){
   $("#upd").textContent="updated "+(lastUpd?lastUpd.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}):"now")+` · ${stories.length} stories`;
 }
 function briefing(vis){const out=[];let t=0;const used={};
-  for(const s of vis){const m=readMinFor(s);if(t+m>budget)continue;if((used[s.cat]||0)>=Math.max(1,Math.ceil(budget/8)))continue;out.push(s);t+=m;used[s.cat]=(used[s.cat]||0)+1;if(t>=budget-.3)break}
+  for(const s of vis){const m=skimMin(s);if(t+m>budget)continue;if((used[s.cat]||0)>=Math.max(2,Math.ceil(budget/3)))continue;out.push(s);t+=m;used[s.cat]=(used[s.cat]||0)+1;if(t>=budget-.3)break}
   return {out,t}}
 function renderBrief(vis){
   const {out,t}=briefing(vis);
-  $("#plist").innerHTML=out.length?out.map((s,i)=>`<div class="pi"><b>${String(i+1).padStart(2,"0")}</b><span>${CAT[s.cat].ic} <a href="${esc(s.url)}" target="_blank" rel="noopener" data-open="${esc(s.id)}" style="color:var(--ink);text-decoration:none">${esc(s.title.length>110?s.title.slice(0,107)+"…":s.title)}</a></span><small>${readMinFor(s).toFixed(1)}m</small></div>`).join(""):`<div class="empty">Loading your briefing…</div>`;
-  $("#briefMeta").textContent=`${out.length} stories · ~${Math.round(t)} min`;
+  $("#plist").innerHTML=out.length?out.map((s,i)=>`<div class="pi"><b>${String(i+1).padStart(2,"0")}</b><span>${CAT[s.cat].ic} <a href="${esc(s.url)}" target="_blank" rel="noopener" data-open="${esc(s.id)}" style="color:var(--ink);text-decoration:none">${esc(s.title.length>110?s.title.slice(0,107)+"…":s.title)}</a></span><small>${skimMin(s).toFixed(1)}m</small></div>`).join(""):`<div class="empty">Loading your briefing…</div>`;
+  $("#briefMeta").textContent=`${out.length} stories · ~${Math.max(1,Math.round(t))} min to skim`;
 }
 function renderWall(){
   const now=Date.now();
@@ -539,7 +540,7 @@ let io;function watchDwell(){io?.disconnect();const seen=new Map();
 let air={list:[],i:0,timer:null,t0:0,dur:0};
 function startAir(list){air.list=list;air.i=0;$("#air").showModal();show()}
 function show(){clearInterval(air.timer);const s=air.list[air.i];if(!s){$("#air").close();toast("That's your briefing. Back to the desk.");return}
-  const c=CAT[s.cat],im=s.impact[0]?IMPACT.find(x=>x.l===s.impact[0]):null;air.dur=Math.min(25,8+s.title.split(" ").length*.35+(s.summary?6:0))*1000;air.t0=Date.now();
+  const c=CAT[s.cat],im=s.impact[0]?IMPACT.find(x=>x.l===s.impact[0]):null;air.dur=Math.min(30,Math.max(8,skimMin(s)*60))*1000;air.t0=Date.now();
   $("#airBox").innerHTML=`<button class="xb" id="airX" aria-label="Close">×</button><div class="scr">${s.img?`<img src="${esc(s.img)}" alt="">`:""}<div class="cap"><div class="lower"><b>${c.ic} ${String(air.i+1).padStart(2,"0")}/${String(air.list.length).padStart(2,"0")}</b><span>${esc(c.n)}</span></div>
    <h2 id="airTitle">${esc(s.title)}</h2>${s.summary&&s.via!=="Hacker News"?`<p style="color:var(--ink-2);margin:0 0 8px">${esc(s.summary.slice(0,300))}</p>`:""}${im?`<div class="why">${im.ic} <b>${im.l}:</b> ${im.why}</div>`:""}</div></div>
    <div class="prog"><i id="airP"></i></div>
